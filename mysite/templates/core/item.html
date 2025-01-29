@@ -11,7 +11,7 @@
     {# Item image #}
     <div class="col-md-6">
         {% if item.image %}
-        <img class="card-img-top mb-5 mb-md-0 rounded-3" src="{{ item.image.url }}" alt="{{ item.name }}" style="height:400px;object-fit:cover">
+        <img class="card-img-top" src="{{ item.image.url }}" alt="{{ item.name }}" style="height:150px;object-fit:contain" />
         {% else %}
         <img class="card-img-top mb-5 mb-md-0 rounded-3" src="https://dummyimage.com/600x700/dee2e6/6c757d.jpg" alt="...">
         {% endif %}
