@@ -9,7 +9,15 @@ from django.views.generic.base import TemplateView, View
 import stripe
 
 from .forms import SearchForm
-from .models import Item, CartItem, Order
+from .models import Item, CartItem, Order, Category
+from rest_framework import generics
+from .serializers import (
+    ItemSerializer,
+    CategorySerializer,
+    CustomTokenObtainPairSerializer,
+)
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 # Create your views here.
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -110,25 +118,12 @@ class CartView(LoginRequiredMixin, OnlyYouMixin, DetailView):
 
 
 class DeleteCartItemView(LoginRequiredMixin, OnlyYouMixin, DeleteView):
-    model = User
+    """
+    カートアイテムを削除するためのビューです。
+    """
 
-    def get_object(self, queryset=None):
-        """
-        デフォルトでDeleteViewが持っているget_objectメソッドを編集します。
-        modelにユーザーモデルを指定しているので、このままでは削除対象となる
-        オブジェクトはユーザーになります。
-        ユーザーではなく、カートに入っている"特定のカートアイテム"を削除対象
-        とするよう、以下の通りオーバーライドします。
-        [手順]
-        1. formからカートアイテムのpkを取得
-        2. カートの中から、取得したpkと一致するカートアイテムを取得
-        """
-        user = super().get_object(queryset)
-        # 1. formからカートアイテムのpkを取得
-        cart_item_pk = self.request.POST["cart_item_pk"]
-        # 2. カートの中から、取得したpkと一致するカートアイテムを取得
-        cart_item = user.cart.cart_items.get(id=cart_item_pk)
-        return cart_item
+    model = CartItem
+    template_name = "core/cart.html"
 
     def get_success_url(self):
         """
@@ -138,6 +133,24 @@ class DeleteCartItemView(LoginRequiredMixin, OnlyYouMixin, DeleteView):
         return reverse_lazy(
             "cart", kwargs={"pk": user_pk}
         )  # kwargsの部分は args=(user_pk,) としてもOK
+
+    def post(self, *args, **kwargs):
+        """
+        'カートから削除'ボタンが押された時(=POSTリクエストが送信された時)
+        カートアイテムを削除するためのメソッドです。
+        DeleteViewはpostメソッドを持っていないので、新たに作成します。
+        [手順]
+        1. HTMLのformからカートアイテムのpkを取得
+        2. 取得したpkをもとにカートアイテムを削除
+        3. カートページにリダイレクト
+        """
+        # 1. HTMLのformからカートアイテムのpkを取得
+        cart_item_pk = self.request.POST.get("cart_item_pk")
+        # 2. 取得したpkをもとにカートアイテムを削除
+        cart_item = CartItem.objects.get(id=cart_item_pk)
+        cart_item.delete()
+        # 3. カートページにリダイレクト
+        return redirect(self.get_success_url())
 
 
 class OrderView(View):
@@ -218,3 +231,28 @@ class OrderView(View):
 
 class SuccessView(TemplateView):
     template_name = "core/success.html"
+
+
+class ItemListView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        queryset = Item.objects.all()
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        return queryset
+
+
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class ItemDetailView(generics.RetrieveAPIView):
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

@@ -10,3 +10,5 @@ sqlparse==0.5.3
 stripe==11.4.1
 typing_extensions==4.12.2
 urllib3==2.3.0
+djangorestframework
+rest_framework_simplejwt

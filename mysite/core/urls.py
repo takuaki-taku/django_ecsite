@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import *
+from .views import ItemListView, CategoryListView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
@@ -13,4 +14,8 @@ urlpatterns = [
     ),  # pkはユーザーのpk
     path("order/", OrderView.as_view(), name="order"),
     path("success/", SuccessView.as_view(), name="success"),
+    path("api/items/", ItemListView.as_view(), name="api_items"),
+    path("api/items/<int:pk>/", ItemDetailView.as_view(), name="api_item_detail"),
+    path("api/categories/", CategoryListView.as_view(), name="api_categories"),
+    path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
 ]
