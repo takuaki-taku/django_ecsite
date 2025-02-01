@@ -36,6 +36,7 @@ MYSITE_DOMAIN = "http://localhost:8000"
 INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "accounts.apps.AccountsConfig",
+    "rest_framework_simplejwt",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -65,7 +66,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Next.jsのオリジンを追加
-    "http://10.0.207.104:3000",  # Next.jsのオリジンを追加
+    "http://10.0.207.104:3000",
+    "http://192.168.144.24:3000",
 ]
 
 ROOT_URLCONF = "mysite.urls"

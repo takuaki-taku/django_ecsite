@@ -5,6 +5,9 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView
 from django.views.generic.base import TemplateView, View
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 import stripe
 
@@ -115,6 +118,32 @@ class CartView(LoginRequiredMixin, OnlyYouMixin, DetailView):
         """
         user = super().get_object(queryset)
         return user.cart
+
+
+class CartView(APIView):  # 変更
+    def get(self, request, pk):  # 変更
+        try:
+            user = User.objects.get(pk=pk)
+            cart = user.cart
+            cart_data = {
+                "id": cart.id,
+                "cart_items": [
+                    {
+                        "id": cart_item.id,
+                        "item": {
+                            "id": cart_item.item.id,
+                            "name": cart_item.item.name,
+                            "price": cart_item.item.price,
+                        },
+                        "quantity": cart_item.quantity,
+                    }
+                    for cart_item in cart.cart_items.all()
+                ],
+                "total_price": cart.total_price,
+            }
+            return Response(cart_data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            raise Http404("User not found")
 
 
 class DeleteCartItemView(LoginRequiredMixin, OnlyYouMixin, DeleteView):
