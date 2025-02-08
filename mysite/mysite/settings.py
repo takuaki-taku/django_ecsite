@@ -36,7 +36,6 @@ MYSITE_DOMAIN = ["http://localhost:8000", "takuaki99.pythonanywhere.com"]
 INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "accounts.apps.AccountsConfig",
-    "rest_framework_simplejwt",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -47,11 +46,6 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
-}
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
