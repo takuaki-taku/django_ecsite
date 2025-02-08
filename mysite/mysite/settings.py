@@ -28,7 +28,7 @@ STRIPE_SECRET_KEY = "sk_test_51Qjd71DN12ArrVQae1mf4SJqUDYpeurBA1n0FWtehmyjx6Ypx6
 DEBUG = True
 
 ALLOWED_HOSTS = []
-MYSITE_DOMAIN = "http://localhost:8000"
+MYSITE_DOMAIN = ["http://localhost:8000", "takuaki99.pythonanywhere.com"]
 
 
 # Application definition
@@ -36,15 +36,25 @@ MYSITE_DOMAIN = "http://localhost:8000"
 INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "accounts.apps.AccountsConfig",
+    "rest_framework_simplejwt",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "corsheaders",
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    )
+}
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -52,6 +62,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Next.jsのオリジンを追加
+    "http://10.0.207.104:3000",
+    "http://192.168.144.24:3000",
 ]
 
 ROOT_URLCONF = "mysite.urls"
