@@ -8,6 +8,7 @@ from django.views.generic.base import TemplateView, View
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from .serializers import UserSerializer
 
 import stripe
 
@@ -21,6 +22,7 @@ from .serializers import (
 )
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import generics
 
 # Create your views here.
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -120,7 +122,7 @@ class CartView(LoginRequiredMixin, OnlyYouMixin, DetailView):
         return user.cart
 
 
-class CartView(APIView):  # 変更
+class CartApiView(APIView):  # 変更
     def get(self, request, pk):  # 変更
         try:
             user = User.objects.get(pk=pk)
@@ -144,6 +146,30 @@ class CartView(APIView):  # 変更
             return Response(cart_data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             raise Http404("User not found")
+
+
+class AddCartItemApiView(APIView):
+    def post(self, request):
+        try:
+            item_pk = request.data.get("item_pk")
+            quantity = int(request.data.get("quantity", 1))
+            user = request.user
+            item = Item.objects.get(pk=item_pk)
+            cart_item = CartItem(item=item, quantity=quantity)
+            user.cart.add_cart_item(cart_item)
+            return Response(
+                {"message": "カートに商品を追加しました。"},
+                status=status.HTTP_201_CREATED,
+            )
+        except Item.DoesNotExist:
+            return Response(
+                {"message": "商品が見つかりません。"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"message": "カートへの追加に失敗しました。"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class DeleteCartItemView(LoginRequiredMixin, OnlyYouMixin, DeleteView):
@@ -285,3 +311,8 @@ class ItemDetailView(generics.RetrieveAPIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class UserCreate(generics.CreateAPIView):
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer
